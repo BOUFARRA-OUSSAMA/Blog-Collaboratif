@@ -1,0 +1,43 @@
+package net.javaguides.springboot.dto;
+
+import java.util.List;
+
+public class CartDto {
+    
+    private Long id;
+    private Long userId; // ID of the user to whom the cart belongs
+    private List<CartItemDto> cartItems; // List of items in the cart
+
+    public CartDto() {
+    }
+
+    public CartDto(Long id, Long userId, List<CartItemDto> cartItems) {
+        this.id = id;
+        this.userId = userId;
+        this.cartItems = cartItems;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public List<CartItemDto> getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(List<CartItemDto> cartItems) {
+        this.cartItems = cartItems;
+    }
+}

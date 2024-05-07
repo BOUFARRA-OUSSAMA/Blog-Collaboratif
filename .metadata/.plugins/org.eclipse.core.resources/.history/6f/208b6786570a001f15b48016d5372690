@@ -1,0 +1,26 @@
+package net.javaguides.springboot.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+
+public class QuantityExceededException extends RuntimeException {
+	
+    private static final long serialVersionUID = 1L;
+
+    public QuantityExceededException() {
+        super();
+    }
+
+    public QuantityExceededException(String message) {
+        super(message);
+    }
+
+    public QuantityExceededException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public QuantityExceededException(Throwable cause) {
+        super(cause);
+    }
+}

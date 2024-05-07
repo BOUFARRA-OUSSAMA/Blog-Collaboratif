@@ -1,0 +1,29 @@
+package net.javaguides.springboot.dto;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import net.javaguides.springboot.enums.UserRole;
+import net.javaguides.springboot.model.user;
+
+public class ReqRes {
+	
+	private int statusCode;
+	private String error;
+	private String message;
+	private String token;
+	private String refreshToken;
+	private String expirationTime;
+	private String username;
+    private String fname;
+    private String lname;
+    private String email;
+    private String address;
+    private String tel;
+    private LocalDate creationDate;
+    private String password;
+    private UserRole role;
+    private user user;
+    private List<user> userList;
+
+}

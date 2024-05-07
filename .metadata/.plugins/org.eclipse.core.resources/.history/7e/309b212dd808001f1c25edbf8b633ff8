@@ -1,0 +1,58 @@
+package net.javaguides.springboot.controller;
+
+import net.javaguides.springboot.dto.OrderDto;
+import net.javaguides.springboot.exception.OrderNotFoundException;
+import net.javaguides.springboot.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<OrderDto>> getOrdersByUserId(@PathVariable Long userId) {
+        List<OrderDto> orders = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orders);
+    }
+
+    @PostMapping
+    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto) {
+        OrderDto createdOrder = orderService.createOrder(orderDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
+
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
+        try {
+            orderService.cancelOrder(orderId);
+            return ResponseEntity.noContent().build();
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OrderDto>> getAllOrders() {
+        List<OrderDto> orders = orderService.getAllOrders();
+        return ResponseEntity.ok(orders);
+    }
+
+    @DeleteMapping("/{orderId}/admin")
+    public ResponseEntity<Void> adminCancelOrder(@PathVariable Long orderId) {
+        try {
+            orderService.adminCancelOrder(orderId);
+            return ResponseEntity.noContent().build();
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}

@@ -1,0 +1,80 @@
+package net.javaguides.springboot.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import net.javaguides.springboot.dto.CartItemDto;
+import net.javaguides.springboot.exception.CartItemNotFoundException;
+import net.javaguides.springboot.exception.CartNotFoundException;
+import net.javaguides.springboot.mapper.CartItemMapper;
+import net.javaguides.springboot.model.Cart;
+import net.javaguides.springboot.model.CartItem;
+import net.javaguides.springboot.repository.CartItemRepository;
+import net.javaguides.springboot.repository.CartRepository;
+
+@Service
+public class CartItemService {
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
+    private CartRepository cartRepository;
+
+    public CartItemService(CartItemRepository cartItemRepository) {
+        this.cartItemRepository = cartItemRepository;
+    }
+
+    public List<CartItemDto> getCartItemsByCartId(Long cartId) {
+        List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
+        return CartItemMapper.mapToCartItemDtoList(cartItems);
+    }
+
+    public CartItemDto addCartItem(Long cartId, CartItemDto cartItemDto) {
+        // Retrieve the cart by its ID
+        Optional<Cart> optionalCart = cartRepository.findById(cartId);
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+
+            // Map the CartItemDto to CartItem and set the cart
+            CartItem cartItem = CartItemMapper.mapToCartItem(cartItemDto);
+            cartItem.setCart(cart);
+
+            // Save the cart item and return the mapped DTO
+            cartItem = cartItemRepository.save(cartItem);
+            return CartItemMapper.mapToCartItemDto(cartItem);
+        } else {
+            throw new CartNotFoundException("Cart not found for ID: " + cartId);
+        }
+    }
+
+
+    public CartItemDto updateCartItem(CartItemDto cartItemDto) {
+        Optional<CartItem> optionalCartItem = cartItemRepository.findById(cartItemDto.getId());
+        if (optionalCartItem.isPresent()) {
+            CartItem cartItem = optionalCartItem.get();
+            cartItem.setQuantity(cartItemDto.getQuantity());
+            cartItem = cartItemRepository.save(cartItem);
+            return CartItemMapper.mapToCartItemDto(cartItem);
+        } else {
+            throw new CartItemNotFoundException("Cart item not found with ID: " + cartItemDto.getId());
+        }
+    }
+
+    public void deleteCartItem(Long cartId) {
+        Optional<CartItem> optionalCartItem = cartItemRepository.findById(cartItemId);
+        if (optionalCartItem.isPresent()) {
+            CartItem cartItem = optionalCartItem.get();
+            if (cartId != null && cartItem.getCart() != null && (cartItem.getCart().getId() != 0) && !(cartItem.getCart().getId() == cartId)) {
+                throw new CartItemNotFoundException("Cart item with ID " + cartItemId +
+                        " does not belong to cart with ID " + cartId);
+            }
+            cartItemRepository.delete(cartItem);
+        } else {
+            throw new CartItemNotFoundException("Cart item not found with ID: " + cartItemId);
+        }
+    }
+
+
+}

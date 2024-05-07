@@ -1,0 +1,58 @@
+package net.javaguides.springboot.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import net.javaguides.springboot.dto.ReqRes;
+import net.javaguides.springboot.model.user;
+import net.javaguides.springboot.repository.UserRepository;
+
+@Service
+public class UsersManagementService {
+	
+	@Autowired
+	private UserRepository usersRepo;
+	
+	@Autowired
+	private JWTUtils jwtUtils;
+	
+	@Autowired
+	private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	
+	public ReqRes register(ReqRes registrationRequest) {
+		ReqRes resp = new ReqRes();
+		
+		try {
+			
+			user user = new user();
+			user.setUsername(registrationRequest.getUsername());
+			user.setEmail(registrationRequest.getEmail());
+			user.setAddress(registrationRequest.getAddress());
+			user.setCreationDate(registrationRequest.getCreationDate());
+			user.setFname(registrationRequest.getFname());
+			user.setLname(registrationRequest.getLname());
+			user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+			user.setRole(registrationRequest.getRole());
+			user.setTel(registrationRequest.getTel());
+			user userResult = usersRepo.save(user);
+			
+			if(userResult.getId()>0) {
+				resp.setUser((userResult));
+				resp.setMessage("User saved successfully!");
+				resp.setStatusCode(200);
+			}
+			
+		}catch (Exception e) {
+			resp.setStatusCode(500);
+			resp.setError(e.getMessage());
+		}
+		return resp;
+	}
+
+}

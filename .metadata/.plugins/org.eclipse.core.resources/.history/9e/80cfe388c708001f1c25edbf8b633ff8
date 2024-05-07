@@ -1,0 +1,27 @@
+package net.javaguides.springboot.mapper;
+
+import net.javaguides.springboot.dto.CartItemDto;
+import net.javaguides.springboot.model.CartItem;
+
+public class CartItemMapper {
+    
+    public static CartItemDto mapToCartItemDto(CartItem cartItem) {
+        return new CartItemDto(
+            cartItem.getId(),
+            cartItem.getCart().getId(),
+            cartItem.getProduct().getId(),
+            cartItem.getQuantity()
+        );
+    }
+    
+    public static CartItem mapToCartItem(CartItemDto cartItemDto) {
+        CartItem cartItem = new CartItem();
+        cartItem.setId(cartItemDto.getId());
+        // Assuming there are mapper methods for CartDto and ProductDto to get respective objects
+        // You need to implement these mapper methods
+        cartItem.setCart(CartMapper.mapToCart(cartItemDto.getCartId()));
+        cartItem.setProduct(ProductMapper.mapToProduct(cartItemDto.getProductId()));
+        cartItem.setQuantity(cartItemDto.getQuantity());
+        return cartItem;
+    }
+}

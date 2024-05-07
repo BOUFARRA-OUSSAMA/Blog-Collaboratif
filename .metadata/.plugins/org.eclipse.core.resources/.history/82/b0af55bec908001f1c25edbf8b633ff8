@@ -1,0 +1,25 @@
+package net.javaguides.springboot.mapper;
+
+import net.javaguides.springboot.dto.CartItemDto;
+import net.javaguides.springboot.model.CartItem;
+
+public class CartItemMapper {
+    
+    public static CartItemDto mapToCartItemDto(CartItem cartItem) {
+        CartItemDto cartItemDto = new CartItemDto();
+        cartItemDto.setId(cartItem.getId());
+        cartItemDto.setCart(CartMapper.mapToCartDto(cartItem.getCart()));
+        cartItemDto.setProduct(ProductMapper.mapToProductDto(cartItem.getProduct()));
+        cartItemDto.setQuantity(cartItem.getQuantity());
+        return cartItemDto;
+    }
+    
+    public static CartItem mapToCartItem(CartItemDto cartItemDto) {
+        CartItem cartItem = new CartItem();
+        cartItem.setId(cartItemDto.getId());
+        cartItem.setCart(CartMapper.mapToCart(cartItemDto.getCart()));
+        cartItem.setProduct(ProductMapper.mapToProduct(cartItemDto.getProduct()));
+        cartItem.setQuantity(cartItemDto.getQuantity());
+        return cartItem;
+    }
+}
