@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import UserService from '../services/userService'; // Import the renamed service
 import { useNavigate } from 'react-router-dom';
+import '../App.css';
 
 const ListuserComponent = () => {
     const [users, setUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5); // Adjust this number as needed
     const navigator = useNavigate();
     const token = localStorage.getItem('token');
 
@@ -21,7 +25,7 @@ const ListuserComponent = () => {
     };
 
     const addNewuser = () => {
-        navigator('/add-user');
+        navigator('/register');
     };
 
     const updateUser = (userId) => {
@@ -30,17 +34,39 @@ const ListuserComponent = () => {
     };
 
     const removeUser = async (id) => {
-        try {
-            await UserService.deleteUser(id, token);
-            getAllUsers(); // Fetch users again after deletion
-        } catch (error) {
-            console.error('Error deleting user: ', error);
+        const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+        if (confirmDelete) {
+            try {
+                await UserService.deleteUser(id, token);
+                getAllUsers(); // Fetch users again after deletion
+            } catch (error) {
+                console.error('Error deleting user: ', error);
+            }
         }
     };
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentUsers = users.filter(user => {
+        return (
+            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.id.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }).slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePaginationClick = (pageNumber) => setCurrentPage(pageNumber);
+
     return (
-        <div>
+        <div className="custom-margin">
             <h2>List of users</h2>
+            <div className="search-container">
+                <input
+                    type="text"
+                    placeholder="Search by username or ID"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
             <table className="table table-striped table-bordered">
                 <thead className="thead-dark">
                     <tr>
@@ -57,7 +83,7 @@ const ListuserComponent = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map(user => (
+                    {currentUsers.map(user => (
                         <tr key={user.id}>
                             <td>{user.id}</td>
                             <td>{user.username}</td>
@@ -83,6 +109,14 @@ const ListuserComponent = () => {
             <div className="text-center">
                 <button className="btn btn-primary" onClick={addNewuser}>Add User</button>
             </div>
+            <div className="pagination">
+                {Array.from({ length: Math.ceil(users.length / itemsPerPage) }).map((_, index) => (
+                    <button key={index} className="btn btn-light" onClick={() => handlePaginationClick(index + 1)}>
+                        {index + 1}
+                    </button>
+                ))}
+            </div>
+            <div className="bottom-padding"></div>
         </div>
     );
 };

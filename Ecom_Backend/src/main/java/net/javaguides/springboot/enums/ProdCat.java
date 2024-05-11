@@ -10,5 +10,6 @@ public enum ProdCat {
     FOOD_AND_DRINKS,
     TOYS,
     FURNITURE,
-    JEWELRY
+    JEWELRY,
+    ARCHIVED
 }

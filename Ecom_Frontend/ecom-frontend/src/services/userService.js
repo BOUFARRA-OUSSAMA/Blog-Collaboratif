@@ -65,6 +65,17 @@ class UserService {
         }
     }
 
+    static async userUpdateUser(userId, userData, token) {
+        try {
+            const response = await axios.put(`${BASE_URL}/user/update-user/${userId}`, userData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async deleteUser(userId, token) {
         try {
             const response = await axios.delete(`${BASE_URL}/admin/delete-user/${userId}`, {

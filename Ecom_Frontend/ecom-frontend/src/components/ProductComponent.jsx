@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createProduct, getProduct, updateProduct } from '../services/ProductService';
 import { useNavigate, useParams } from 'react-router-dom';
+import '../App.css'
 
 const ProductComponent = () => {
 
@@ -139,6 +140,10 @@ const ProductComponent = () => {
         }
 
         if (id) {
+            const confirmed = window.confirm('Are you sure you want to submit the form?');
+        if (!confirmed) {
+            return; // Do not proceed with form submission if not confirmed
+        }
             updateProduct(id, formData, token)
                 .then(response => {
                     console.log('Product updated successfully:', response.data);
@@ -188,7 +193,7 @@ const ProductComponent = () => {
     }
 
     return (
-        <div className="container mt-5 pb-5">
+        <div className="custom-margin container mt-5 pb-5">
             <div className="row justify-content-center">
                 <div className="col-md-6">
                     <div className="card">

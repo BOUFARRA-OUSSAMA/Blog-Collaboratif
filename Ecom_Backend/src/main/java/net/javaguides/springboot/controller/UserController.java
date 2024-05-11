@@ -95,6 +95,12 @@ public class UserController {
 		return ResponseEntity.ok(userDto);
 	}
 	
+	@PutMapping("/user/update-user/{id}")
+	public ResponseEntity<UserDto> userUpdateUser(@PathVariable("id") long userId, @RequestBody UserDto updatedUser){
+		UserDto userDto = userService.updateUser(userId, updatedUser);
+		return ResponseEntity.ok(userDto);
+	}
+	
 	//Build Delete user REST API
 	@DeleteMapping("/admin/delete-user/{id}")
 	public ResponseEntity<String> deleteUser(@PathVariable("id") long userId){

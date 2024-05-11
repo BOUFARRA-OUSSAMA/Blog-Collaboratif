@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { Link } from 'react-router-dom';
 import CartService from '../services/CartService';
 import OrderService from '../services/OrderService';
 import UserService from '../services/userService';
 import CartItemService from '../services/CartItemService';
+import '../App.css';
 
 const CartComponent = () => {
     const [cartItems, setCartItems] = useState([]);
-    const [orders, setOrders] = useState([]);
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -16,10 +16,8 @@ const CartComponent = () => {
     const creationDate = today.toISOString().slice(0, 19);
 
     useEffect(() => {
-        // Fetch cart items when the component mounts
         fetchCartItems();
         fetchProfileData();
-        fetchOrders();
     }, []);
 
     const fetchCartItems = async () => {
@@ -27,15 +25,10 @@ const CartComponent = () => {
             setLoading(true);
             setError(null);
 
-            const userdata = await UserService.getYourProfile(token); // Implement getCurrentUserCartId function
+            const userdata = await UserService.getYourProfile(token);
             const cartId = userdata.user.cart.id;
-            
-            // Fetch cart items using CartService
-            const cartItemsResponse = await CartService.getCartDetails(cartId, token);
-            console.log("cart details:");
-            console.log(cartItemsResponse);
 
-            // Update cart items state
+            const cartItemsResponse = await CartService.getCartDetails(cartId, token);
             setCartItems(cartItemsResponse.cartItems);
         } catch (error) {
             setError(error.message);
@@ -53,46 +46,28 @@ const CartComponent = () => {
         }
     };
 
-    const fetchOrders = async () => {
-        try {
-            const userdata = await UserService.getYourProfile(token);
-            console.log(userdata.user.id);
-
-            const orders = await OrderService.getOrdersByUserId(userdata.user.id, token);
-            setOrders(orders);
-        } catch (error) {
-            console.error('Error fetching profile data:', error);
-        }
-    };
-
     const handleOrderCart = async () => {
+        const confirmed = window.confirm('Are you sure you want to finalize the order?');
+        if (!confirmed) {
+            return;
+        }
         try {
             setLoading(true);
             setError(null);
 
-            const totalPricee = cartItems.reduce((total, cartItem) => total + cartItem.price, 0);
+            const totalPrice = cartItems.reduce((total, cartItem) => total + cartItem.price, 0);
 
             const newOrder = {
                 user: profileData,
-                orderDate: creationDate, 
-                status: "pending",
-                totalPrice: totalPricee,
+                orderDate: creationDate,
+                status: 'pending',
+                totalPrice: totalPrice,
             };
 
-            console.log(newOrder);
-
-            // Create an order using OrderService
             const ord = await OrderService.createOrder(newOrder, token);
-
-            console.log(token);
-
-            console.log(cartItems);
 
             await OrderService.addCartItemsToOrder(ord.id, token, cartItems);
 
-            // Clear the cart using CartService
-
-            // Fetch cart items again to update the cart view
             await fetchCartItems();
 
             alert('Order placed successfully!');
@@ -104,18 +79,22 @@ const CartComponent = () => {
     };
 
     const handleRemoveItem = async (cartItemId) => {
+        const confirmed = window.confirm('Are you sure you want to remove this item from your cart?');
+        if (!confirmed) {
+            return;
+        }
         try {
             await CartItemService.deleteCartItem(cartItemId, token);
-            // Fetch cart items again to update the cart view
             await fetchCartItems();
         } catch (error) {
             setError(error.message);
         }
     };
+    
 
     const handleChangeQuantity = (cartItemId, newQuantity) => {
-        setCartItems(prevCartItems =>
-            prevCartItems.map(item =>
+        setCartItems((prevCartItems) =>
+            prevCartItems.map((item) =>
                 item.id === cartItemId ? { ...item, newQuantity } : item
             )
         );
@@ -123,16 +102,14 @@ const CartComponent = () => {
 
     const handleUpdateQuantity = async (cartItemId) => {
         try {
-            const cartItem = cartItems.find(item => item.id === cartItemId);
+            const cartItem = cartItems.find((item) => item.id === cartItemId);
             if (!cartItem) return;
 
             const cartItemDto = {
                 ...cartItem,
-                quantity: cartItem.newQuantity
+                quantity: cartItem.newQuantity,
             };
-            console.log(cartItemDto);
             await CartItemService.updateCartItem(cartItemId, cartItemDto, token);
-            // Fetch cart items again to update the cart view
             await fetchCartItems();
         } catch (error) {
             setError(error.message);
@@ -148,23 +125,60 @@ const CartComponent = () => {
     }
 
     return (
-        <div>
-            <h2>Cart</h2>
-            <ul>
-                {cartItems.map((cartItem) => (
-                    <li key={cartItem.id}>
-                        <Link to={`/public/products/${cartItem.product.id}`}>{cartItem.product.name}</Link> - Quantity: {cartItem.quantity} - Price: {cartItem.price}
-                        <button onClick={() => handleRemoveItem(cartItem.id)}>Remove</button>
-                        <input
-                            type="number"
-                            value={cartItem.newQuantity !== undefined ? cartItem.newQuantity : cartItem.quantity}
-                            onChange={(e) => handleChangeQuantity(cartItem.id, e.target.value)}
-                        />
-                        <button onClick={() => handleUpdateQuantity(cartItem.id)}>Update Quantity</button>
-                    </li>
-                ))}
-            </ul>
-            <button onClick={handleOrderCart}>Order Cart</button>
+        <div className="custom-margin">
+                <h2 className="cart-title mb-4 text-center">Your Shopping Cart</h2>
+                <div className="row">
+                    {cartItems.map((cartItem) => (
+                        <div className="col-md-4" key={cartItem.id}>
+                            <div className="card mb-3">
+                                <img src={cartItem.product.image} className="card-img-top" alt={cartItem.product.name} />
+                                <div className="card-body">
+                                    <h5 className="card-title">
+                                        <Link to={`/public/products/${cartItem.product.id}`}>
+                                            {cartItem.product.name}
+                                        </Link>
+                                    </h5>
+                                    <p className="card-text">Quantity: {cartItem.quantity}</p>
+                                    <p className="card-text">Price: {cartItem.price}</p>
+                                </div>
+                                <div className="card-footer d-flex justify-content-between align-items-center">
+                                    <div className="form-group mb-0">
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            value={
+                                                cartItem.newQuantity !== undefined
+                                                    ? cartItem.newQuantity
+                                                    : cartItem.quantity
+                                            }
+                                            onChange={(e) =>
+                                                handleChangeQuantity(cartItem.id, e.target.value)
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={() => handleUpdateQuantity(cartItem.id)}
+                                        >
+                                            Update Quantity
+                                        </button>
+                                        <button
+                                            className="btn btn-danger ml-2"
+                                            onClick={() => handleRemoveItem(cartItem.id)}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <button className="btn btn-primary" onClick={handleOrderCart}>
+                    Order Cart
+                </button>
+            <div className="bottom-padding"></div>
         </div>
     );
 };

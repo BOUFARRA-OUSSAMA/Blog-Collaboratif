@@ -76,6 +76,32 @@ public class UserServiceImpl implements UserService{
 		
 		return UserMapper.mapToUserDto(updatedUserobj);
 	}
+	
+	@Override
+	public UserDto userUpdateUser(long userId, UserDto updatedUser) {
+		user user = userRepository.findById(userId).orElseThrow(
+					() -> new ResourceNotFoundException("User does not exist with given Id: " + userId)
+				);
+		
+		user.setUsername(updatedUser.getUsername()); // Updated field
+        user.setFname(updatedUser.getFname());
+        user.setLname(updatedUser.getLname());
+        user.setEmail(updatedUser.getEmail());
+        user.setRole(updatedUser.getRole());
+        user.setAddress(updatedUser.getAddress()); // Updated field
+        user.setTel(updatedUser.getTel()); // Updated field
+        user.setCreationDate(updatedUser.getCreationDate()); // Updated field
+     // Check if the password exists and encode it if it does
+        String updatedPassword = updatedUser.getPassword();
+        if (updatedPassword != null && !updatedPassword.isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(updatedPassword);
+            user.setPassword(encodedPassword);
+        }
+		
+		user updatedUserobj = userRepository.save(user);
+		
+		return UserMapper.mapToUserDto(updatedUserobj);
+	}
 
 	@Override
 	public void deleteUser(long userId) {

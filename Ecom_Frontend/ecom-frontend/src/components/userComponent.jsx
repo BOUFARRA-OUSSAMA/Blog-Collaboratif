@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import UserService from '../services/userService';
 import { useNavigate, useParams } from 'react-router-dom';
+import '../App.css'
 
 const UserComponent = () => {
 
     const token = localStorage.getItem('token');
 
+    const role = localStorage.getItem('role');
+
     const navigator = useNavigate();
+
+    const [profileData, setProfileData] = useState(null);
+
 
     const {id} = useParams();
 
@@ -35,6 +40,30 @@ const UserComponent = () => {
             ...prevState,
             [name]: value
         }));
+    };
+
+    const fetchProfileData = async () => {
+        UserService.getYourProfile(token)
+                .then((response) => {
+                    // Assuming the response contains user data
+                    const userData = response.user; // Adjust this based on the actual response structure
+                    // Update the form data with the fetched user data
+                    setFormData({
+                        username: userData.username,
+                        creationDate: userData.creationDate,
+                        fname: userData.fname,
+                        lname: userData.lname,
+                        email: userData.email,
+                        address: userData.address,
+                        tel: userData.tel,
+                        password: userData.password, // Consider whether to include the password here
+                        confirmPassword: '', // You might want to clear the confirmPassword field
+                        role: userData.role
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching user:', error);
+                });
     };
 
     const validateForm = () => {
@@ -68,16 +97,6 @@ const UserComponent = () => {
             errors.tel = 'Telephone number must be 10 digits';
         }
     
-        if (!formData.password.trim()) {
-            errors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-            errors.password = 'Password must be at least 6 characters';
-        }
-    
-        if (!formData.confirmPassword.trim()) {
-            errors.confirmPassword = 'Confirm Password is required';
-        }
-    
         if (!formData.role.trim()) {
             errors.role = 'Role is required';
         }
@@ -86,7 +105,7 @@ const UserComponent = () => {
     };
 
     useEffect(() => {
-        if(id){
+        if(id && role == "ADMIN"){
             UserService.getUser(id, token)
                 .then((response) => {
                     // Assuming the response contains user data
@@ -109,12 +128,21 @@ const UserComponent = () => {
                     console.error('Error fetching user:', error);
                 });
         }
+
+        if(role == "CUSTOMER"){
+            fetchProfileData();
+        }
     }, [id]);
 
     
 
     const handleSubmit = (e) => {
         e.preventDefault();
+    
+        const confirmed = window.confirm('Are you sure you want to submit the form?');
+        if (!confirmed) {
+            return; // Do not proceed with form submission if not confirmed
+        }
     
         // Validate the form
         const formErrors = validateForm();
@@ -126,23 +154,15 @@ const UserComponent = () => {
             return;
         }
     
-        // Check if passwords match
-        if (formData.password !== formData.confirmPassword) {
-            // Set error for password confirmation
-            setErrors(prevState => ({
-                ...prevState,
-                confirmPassword: 'Passwords do not match'
-            }));
-            return;
-        }
-    
         // Perform form validation here if needed
     
-        if (id) {
+        if (id && role == "ADMIN") {
+            console.log(formData);
             // If id exists, it means we're updating an existing user
+            formData.password = "";
             UserService.updateUser(id, formData, token)
                 .then(response => {
-                    console.log('User updated successfully:', response.data);
+                    console.log('User updated successfully:', formData);
                     navigator('/admin/get-all-users');
                     // Optionally, you can reset the form fields after successful submission
                     setFormData({
@@ -162,13 +182,15 @@ const UserComponent = () => {
                     console.error('Error updating user:', error);
                     // Optionally, you can display an error message to the user
                 });
-        } else {
-            // If userId doesn't exist, it means we're adding a new user
-            createUser(formData)
+        } else if (id && role == "CUSTOMER") {
+            console.log(formData);
+            // If id exists, it means we're updating an existing user
+            formData.password = "";
+            console.log(formData);
+            UserService.userUpdateUser(id, formData, token)
                 .then(response => {
-                    // Handle successful response from the backend
-                    console.log('User added successfully:', response.data);
-                    navigator('/users');
+                    console.log('User updated successfully:', formData);
+                    navigator('/profile');
                     // Optionally, you can reset the form fields after successful submission
                     setFormData({
                         username: '',
@@ -184,7 +206,7 @@ const UserComponent = () => {
                 })
                 .catch(error => {
                     // Handle errors from the backend
-                    console.error('Error adding user:', error);
+                    console.error('Error updating user:', error);
                     // Optionally, you can display an error message to the user
                 });
         }
@@ -202,7 +224,7 @@ const UserComponent = () => {
     
 
     return (
-        <div className="container mt-5 pb-5">
+        <div className="custom-margin container mt-5 pb-5">
             <div className="row justify-content-center">
                 <div className="col-md-6">
                     <div className="card">
@@ -240,16 +262,6 @@ const UserComponent = () => {
                                     <label htmlFor="tel">Telephone:</label>
                                     <input type="text" className="form-control" id="tel" name="tel" value={formData.tel} onChange={handleChange} />
                                     {errors.tel && <span className="text-danger">{errors.tel}</span>}
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="password">Password:</label>
-                                    <input type="password" className="form-control" id="password" name="password" value={formData.password} onChange={handleChange} />
-                                    {errors.password && <span className="text-danger">{errors.password}</span>}
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="confirmPassword">Confirm Password:</label>
-                                    <input type="password" className="form-control" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} />
-                                    {errors.confirmPassword && <span className="text-danger">{errors.confirmPassword}</span>}
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="role">Role:</label>

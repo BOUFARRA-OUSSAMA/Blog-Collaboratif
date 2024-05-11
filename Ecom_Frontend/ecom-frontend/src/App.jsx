@@ -63,6 +63,8 @@ function App() {
                 <Route path='/user/cart' element = {<CartComponent />}></Route>
                 {/*// http://localhost:3000/users*/}
                 <Route path='/user/orders' element = {<UserOrdersComponent />}></Route>
+                {/*// http://localhost:3000/update-user/1*/}
+                <Route path='/user/update-user/:id' element = { <UserComponent/> }></Route>
               </>
               
             )}

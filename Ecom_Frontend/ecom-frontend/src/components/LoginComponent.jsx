@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import UserService from '../services/userService'; // Import the UserService
 import { useNavigate } from 'react-router-dom';
+import '../App.css'
 
 const LoginComponent = () => {
     const [formData, setFormData] = useState({
@@ -44,7 +45,7 @@ const LoginComponent = () => {
     };
 
     return (
-        <div className="container mt-5">
+        <div className= "custom-margin container mt-5">
             <div className="row justify-content-center">
                 <div className="col-md-6">
                     <div className="card">
