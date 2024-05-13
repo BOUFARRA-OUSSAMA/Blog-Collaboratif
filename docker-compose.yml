@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: password123
+      MYSQL_DATABASE: ecom
+      MYSQL_USER: midnight
+      MYSQL_PASSWORD: password123
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+
+  backend:
+    build:
+      context: ./Ecom_Backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://mysql-db:3306/ecom
+      DB_USERNAME: midnight
+      DB_PASSWORD: password123
+    depends_on:
+      - mysql-db
+
+  frontend:
+    build:
+      context: ./Ecom_Frontend/ecom-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend  # Wait for the backend service to be ready
+
+volumes:
+  mysql_data:
